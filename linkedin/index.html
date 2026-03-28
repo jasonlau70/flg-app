@@ -273,6 +273,61 @@
     .toast { position: fixed; bottom: 22px; right: 22px; background: var(--navy); color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 400; }
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast svg { width: 13px; height: 13px; color: var(--gold); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      header { padding: 12px 16px; }
+      .header-title { font-size: 13px; }
+      .header-subtitle { font-size: 10px; }
+      .logo { height: 26px; }
+
+      .tab-nav { padding: 0 12px; gap: 0; overflow-x: auto; }
+      .tab-btn { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+      .add-btn { padding: 7px 11px; font-size: 11px; margin-left: 8px; }
+
+      .stats-bar { padding: 8px 16px; gap: 14px; flex-wrap: wrap; }
+      .stat { font-size: 10px; }
+      .stat strong { font-size: 12px; }
+
+      .toolbar { padding: 14px 16px 8px; gap: 8px; }
+      .search-wrap { max-width: 100%; }
+      .filter-btns { flex-wrap: wrap; }
+      .filter-btn { padding: 6px 10px; font-size: 11px; }
+
+      .grid { padding: 8px 16px 40px; grid-template-columns: 1fr; gap: 10px; }
+
+      /* Posts tab: stack sidebar above feed on mobile */
+      .posts-layout { flex-direction: column; min-height: unset; }
+      .posts-sidebar {
+        width: 100%;
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        overflow-x: auto;
+        overflow-y: visible;
+      }
+      /* Sidebar profiles go horizontal on mobile */
+      .posts-sidebar > div:last-of-type { display: flex; flex-direction: row; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+      .sidebar-profile { flex-shrink: 0; padding: 6px 10px; }
+      .sp-count { display: none; }
+
+      .posts-feed { padding: 14px 16px 40px; max-width: 100%; }
+      .posts-toolbar { gap: 8px; }
+      .hook-filters { gap: 4px; }
+      .hook-filter { padding: 4px 9px; font-size: 10px; }
+
+      .post-card { padding: 14px; }
+      .post-card-header { gap: 8px; margin-bottom: 10px; }
+      .post-date { font-size: 10px; }
+      .post-text { font-size: 12px; }
+
+      .modal { padding: 20px 16px; width: calc(100vw - 32px); }
+    }
   </style>
 </head>
 <body>
