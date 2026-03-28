@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FLG — LinkedIn Swipe File</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #171d2f;
+      --gold:   #d3b764;
+      --cream:  #efede8;
+      --white:  #ffffff;
+      --text:   #171d2f;
+      --muted:  #6b7280;
+      --border: #e2ddd6;
+      --tag-cpa-bg: #fff8e6;
+      --tag-cpa-color: #a07b1e;
+      --tag-broad-bg: #e8f0ff;
+      --tag-broad-color: #2d62ff;
+      --tag-both-bg: #eef6ee;
+      --tag-both-color: #2a7c2a;
+    }
+
+    body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      padding: 16px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo { height: 32px; filter: brightness(0) invert(1); }
+    .header-divider { width: 1px; height: 26px; background: rgba(211,183,100,0.4); }
+    .header-title { color: #fff; font-size: 15px; font-weight: 600; }
+    .header-subtitle { color: var(--gold); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* ── TAB NAV ── */
+    .tab-nav {
+      background: var(--navy);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 0 36px;
+      display: flex;
+      gap: 0;
+    }
+    .tab-btn {
+      padding: 11px 20px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.7); }
+    .tab-count {
+      background: rgba(211,183,100,0.2);
+      color: var(--gold);
+      border-radius: 10px;
+      padding: 1px 7px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .add-btn {
+      margin-left: auto;
+      align-self: center;
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .add-btn:hover { background: #e8ca74; }
+    .add-btn svg { width: 13px; height: 13px; }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      background: #111623;
+      padding: 8px 36px;
+      display: flex;
+      gap: 28px;
+    }
+    .stat { display: flex; align-items: center; gap: 7px; font-size: 11px; color: rgba(255,255,255,0.45); }
+    .stat strong { color: var(--gold); font-size: 14px; font-weight: 700; }
+
+    /* ── TAB PANELS ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ════════════════════
+       PROFILES TAB
+    ════════════════════ */
+    .toolbar {
+      padding: 20px 36px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+    .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 14px; height: 14px; pointer-events: none; }
+    .search-input { width: 100%; padding: 8px 10px 8px 32px; border: 1.5px solid var(--border); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 13px; background: #fff; color: var(--text); outline: none; }
+    .search-input:focus { border-color: var(--navy); }
+    .filter-btns { display: flex; gap: 5px; }
+    .filter-btn { padding: 7px 13px; border-radius: 7px; border: 1.5px solid var(--border); background: #fff; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--navy); background: var(--navy); color: #fff; }
+
+    .grid { padding: 10px 36px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+
+    .card { background: #fff; border-radius: 12px; border: 1.5px solid var(--border); padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: box-shadow 0.15s, transform 0.15s; }
+    .card:hover { box-shadow: 0 4px 18px rgba(23,29,47,0.09); transform: translateY(-1px); }
+    .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .card-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--navy); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+    .card-info { flex: 1; }
+    .name-input { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); border: none; background: transparent; width: 100%; outline: none; padding: 2px 4px; border-radius: 4px; transition: background 0.15s; }
+    .name-input:hover, .name-input:focus { background: var(--cream); }
+    .card-actions { display: flex; gap: 3px; }
+    .icon-btn { width: 27px; height: 27px; border-radius: 6px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: all 0.15s; }
+    .icon-btn:hover { background: var(--cream); color: var(--text); }
+    .icon-btn.delete:hover { background: #fee2e2; color: #dc2626; }
+    .icon-btn.posts-btn:hover { background: #e8f0ff; color: #2d62ff; }
+    .icon-btn svg { width: 14px; height: 14px; }
+
+    .tag-row { display: flex; align-items: center; gap: 8px; }
+    .tag-select { border: none; border-radius: 20px; padding: 3px 10px; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; }
+    .tag-select.cpa   { background: var(--tag-cpa-bg);   color: var(--tag-cpa-color); }
+    .tag-select.broad { background: var(--tag-broad-bg); color: var(--tag-broad-color); }
+    .tag-select.both  { background: var(--tag-both-bg);  color: var(--tag-both-color); }
+
+    .url-row { display: flex; align-items: center; gap: 5px; }
+    .url-input { flex: 1; font-family: 'Inter', sans-serif; font-size: 12px; color: var(--muted); border: 1.5px solid var(--border); border-radius: 6px; padding: 5px 9px; outline: none; background: var(--cream); transition: border-color 0.15s; }
+    .url-input:focus { border-color: var(--navy); background: #fff; }
+    .li-link { flex-shrink: 0; width: 28px; height: 28px; border-radius: 6px; background: #0a66c2; color: #fff; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.15s; }
+    .li-link:hover { background: #004182; }
+    .li-link svg { width: 13px; height: 13px; }
+
+    .notes-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 3px; }
+    .notes-textarea { width: 100%; font-family: 'Inter', sans-serif; font-size: 12px; color: var(--text); border: 1.5px solid var(--border); border-radius: 6px; padding: 7px 9px; outline: none; resize: none; background: var(--cream); min-height: 58px; line-height: 1.5; transition: border-color 0.15s; }
+    .notes-textarea:focus { border-color: var(--navy); background: #fff; }
+    .notes-textarea::placeholder { color: #bbb; }
+
+    /* View posts link */
+    .view-posts-link { font-size: 11px; color: #2d62ff; cursor: pointer; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .view-posts-link:hover { text-decoration: underline; }
+
+    /* ════════════════════
+       POSTS TAB
+    ════════════════════ */
+    .posts-layout { display: flex; min-height: calc(100vh - 120px); }
+
+    /* Sidebar */
+    .posts-sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      padding: 20px 16px;
+      border-right: 1px solid var(--border);
+      background: #fff;
+      position: sticky;
+      top: 96px;
+      height: calc(100vh - 96px);
+      overflow-y: auto;
+    }
+    .sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; padding: 0 4px; }
+    .sidebar-profile {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s;
+      margin-bottom: 2px;
+    }
+    .sidebar-profile:hover { background: var(--cream); }
+    .sidebar-profile.active { background: #e8f0ff; }
+    .sidebar-profile.active .sp-name { color: #2d62ff; font-weight: 600; }
+    .sp-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .sp-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.3; }
+    .sp-count { margin-left: auto; font-size: 10px; color: var(--muted); background: var(--cream); border-radius: 10px; padding: 1px 6px; }
+
+    /* Posts feed */
+    .posts-feed { flex: 1; padding: 20px 28px 60px; max-width: 780px; }
+
+    .posts-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+    .posts-search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .posts-search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 14px; height: 14px; pointer-events: none; }
+    .posts-search { width: 100%; padding: 8px 10px 8px 32px; border: 1.5px solid var(--border); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 13px; background: #fff; outline: none; }
+    .posts-search:focus { border-color: var(--navy); }
+
+    .hook-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+    .hook-filter { padding: 5px 11px; border-radius: 20px; border: 1.5px solid var(--border); background: #fff; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .hook-filter.active, .hook-filter:hover { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+    .post-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 14px;
+      transition: box-shadow 0.15s;
+    }
+    .post-card:hover { box-shadow: 0 3px 16px rgba(23,29,47,0.08); }
+    .post-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .post-profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .post-profile-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .post-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+    .post-tag { font-size: 10px; font-weight: 600; border-radius: 10px; padding: 2px 8px; }
+    .post-tag.cpa   { background: var(--tag-cpa-bg);   color: var(--tag-cpa-color); }
+    .post-tag.broad { background: var(--tag-broad-bg); color: var(--tag-broad-color); }
+    .post-tag.both  { background: var(--tag-both-bg);  color: var(--tag-both-color); }
+    .hook-badge { font-size: 10px; font-weight: 600; background: #f3f0ea; color: var(--muted); border-radius: 10px; padding: 2px 8px; }
+    .post-date { font-size: 11px; color: #aaa; margin-left: auto; }
+
+    .post-text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text);
+      white-space: pre-wrap;
+      margin-bottom: 14px;
+    }
+    .post-text.collapsed { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .expand-btn { font-size: 11px; color: #2d62ff; cursor: pointer; font-weight: 500; background: none; border: none; padding: 0; font-family: 'Inter', sans-serif; margin-bottom: 12px; }
+    .expand-btn:hover { text-decoration: underline; }
+
+    .post-footer { display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px solid var(--border); }
+    .engagement-text { font-size: 11px; color: var(--muted); flex: 1; }
+    .li-open-btn { font-size: 11px; color: #0a66c2; text-decoration: none; display: flex; align-items: center; gap: 4px; font-weight: 500; }
+    .li-open-btn:hover { text-decoration: underline; }
+    .li-open-btn svg { width: 12px; height: 12px; }
+
+    .posts-empty { text-align: center; padding: 80px 20px; color: var(--muted); }
+    .posts-empty svg { width: 44px; height: 44px; opacity: 0.25; margin-bottom: 12px; }
+    .posts-empty p { font-size: 14px; }
+
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(23,29,47,0.5); z-index: 300; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 14px; padding: 26px; width: 400px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 18px; }
+    .modal label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+    .modal input, .modal select { width: 100%; padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--text); background: #fff; outline: none; margin-bottom: 12px; }
+    .modal input:focus, .modal select:focus { border-color: var(--navy); }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+    .btn-cancel { padding: 9px 16px; border-radius: 7px; border: 1.5px solid var(--border); background: #fff; font-family: 'Inter', sans-serif; font-size: 13px; cursor: pointer; color: var(--muted); }
+    .btn-save { padding: 9px 18px; border-radius: 7px; border: none; background: var(--navy); color: #fff; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save:hover { background: #232c47; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 22px; right: 22px; background: var(--navy); color: #fff; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 400; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast svg { width: 13px; height: 13px; color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <img class="logo" src="https://cdn.prod.website-files.com/6976b5d8583aa3a848209b11/6976b5d8583aa3a848209c2a_69769aa2ab114890882c7409_7c0ee983-55ae-40b6-92b3-547bf4ddcefc%20(2).png" alt="FLG" onerror="this.style.display='none'"/>
+    <div class="header-divider"></div>
+    <div>
+      <div class="header-title">LinkedIn Swipe File</div>
+      <div class="header-subtitle">Founder Legacy Group</div>
+    </div>
+  </div>
+</header>
+
+<!-- TAB NAV + STATS -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('profiles', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><circle cx="19" cy="7" r="2"/><path d="M22 21v-1a2 2 0 00-2-2h-1"/></svg>
+    Profiles
+    <span class="tab-count" id="tc-profiles">16</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('posts', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Inspiration Posts
+    <span class="tab-count" id="tc-posts">9</span>
+  </button>
+  <button class="add-btn" id="add-btn-header" onclick="openModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Profile
+  </button>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><strong id="stat-total">0</strong> Profiles</div>
+  <div class="stat"><strong id="stat-cpa">0</strong> CPA</div>
+  <div class="stat"><strong id="stat-broad">0</strong> Broad</div>
+  <div class="stat"><strong id="stat-both">0</strong> Both</div>
+  <div class="stat"><strong id="stat-posts">0</strong> Saved Posts</div>
+</div>
+
+<!-- ══ PROFILES TAB ══ -->
+<div class="tab-panel active" id="panel-profiles">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" type="text" placeholder="Search profiles..." oninput="renderProfiles()" id="search-input"/>
+    </div>
+    <div class="filter-btns">
+      <button class="filter-btn active" data-filter="all"   onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn"        data-filter="cpa"   onclick="setFilter('cpa',this)">CPA</button>
+      <button class="filter-btn"        data-filter="broad" onclick="setFilter('broad',this)">Broad</button>
+      <button class="filter-btn"        data-filter="both"  onclick="setFilter('both',this)">Both</button>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- ══ POSTS TAB ══ -->
+<div class="tab-panel" id="panel-posts">
+  <div class="posts-layout">
+
+    <!-- Sidebar -->
+    <div class="posts-sidebar">
+      <div class="sidebar-label">Filter by Profile</div>
+      <div class="sidebar-profile active" data-profile-filter="all" onclick="setPostsProfileFilter('all', this)">
+        <div class="sp-avatar" style="font-size:9px;">ALL</div>
+        <div class="sp-name">All Profiles</div>
+        <span class="sp-count" id="sc-all">0</span>
+      </div>
+      <div id="sidebar-profiles"></div>
+    </div>
+
+    <!-- Feed -->
+    <div class="posts-feed">
+      <div class="posts-toolbar">
+        <div class="posts-search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="posts-search" type="text" placeholder="Search posts..." oninput="renderPosts()" id="posts-search"/>
+        </div>
+        <div class="hook-filters" id="hook-filters">
+          <button class="hook-filter active" data-hook="all" onclick="setHookFilter('all',this)">All Hooks</button>
+        </div>
+      </div>
+      <div id="posts-feed-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PROFILE MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Add New Profile</h3>
+    <label>Name</label>
+    <input type="text" id="m-name" placeholder="e.g. Alex Hormozi"/>
+    <label>LinkedIn URL</label>
+    <input type="text" id="m-url" placeholder="https://linkedin.com/in/..."/>
+    <label>Category</label>
+    <select id="m-tag">
+      <option value="broad">Broad Business</option>
+      <option value="cpa">CPA Niche</option>
+      <option value="both">Both</option>
+    </select>
+    <label>Notes (optional)</label>
+    <input type="text" id="m-notes" placeholder="e.g. Great storytelling hooks"/>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save"   onclick="addProfile()">Add Profile</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  Saved
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  DEFAULT DATA
+// ════════════════════════════════════════
+
+const DEFAULT_PROFILES = [
+  { id: 1,  name: "Codie Sanchez",    url: "https://www.linkedin.com/in/codiesanchez/",    tag: "broad", notes: "Bold statements, productizing service businesses, acquisition stories. Very high engagement." },
+  { id: 2,  name: "Alex Hormozi",     url: "https://www.linkedin.com/in/alexhormozi/",     tag: "broad", notes: "Short punchy one-liners, motivational. Massive reach." },
+  { id: 3,  name: "Brent Beshore",    url: "https://www.linkedin.com/in/brentbeshore/",    tag: "broad", notes: "" },
+  { id: 4,  name: "Nick Huber",       url: "https://www.linkedin.com/in/nickhubertx/",     tag: "broad", notes: "" },
+  { id: 5,  name: "Sara Blakely",     url: "https://www.linkedin.com/in/sarablakely/",     tag: "broad", notes: "" },
+  { id: 6,  name: "David Barnett",    url: "https://www.linkedin.com/in/david-c-barnett/", tag: "cpa",   notes: "" },
+  { id: 7,  name: "Walker Deibel",    url: "https://www.linkedin.com/in/walkerdeibel/",    tag: "cpa",   notes: "" },
+  { id: 8,  name: "Kelvin Castelino", url: "https://www.linkedin.com/in/kelvincastelino/", tag: "broad", notes: "" },
+  { id: 9,  name: "Jim Sharpe",       url: "https://www.linkedin.com/in/jimsharpe/",       tag: "broad", notes: "" },
+  { id: 10, name: "Allan Koltin",     url: "https://www.linkedin.com/in/allankoltin/",     tag: "cpa",   notes: "" },
+  { id: 11, name: "Jean Daly",        url: "https://www.linkedin.com/in/jean-daly/",       tag: "cpa",   notes: "" },
+  { id: 12, name: "Erik Solbakken",   url: "https://www.linkedin.com/in/eriksolbakken/",   tag: "cpa",   notes: "" },
+  { id: 13, name: "Roman Villard",    url: "https://www.linkedin.com/in/rdvcpa/",          tag: "cpa",   notes: "Contrarian takes on accounting industry. Strong storytelling. Personal and relatable tone." },
+  { id: 14, name: "Shaan Puri",       url: "https://www.linkedin.com/in/shaanpuri/",       tag: "broad", notes: "" },
+  { id: 15, name: "Greg Isenberg",    url: "https://www.linkedin.com/in/gregisenberg/",    tag: "broad", notes: "" },
+  { id: 16, name: "Andrew Wilkinson", url: "https://www.linkedin.com/in/awilkinson/",      tag: "broad", notes: "" },
+];
+
+const DEFAULT_POSTS = [
+  // ── Roman Villard ──
+  {
+    id: 101,
+    profileId: 13,
+    profile: "Roman Villard",
+    tag: "cpa",
+    hook: "Bold Statement",
+    text: "We're no longer in the age of SOCIAL media. We're in the age of INTEREST media.\n\nYour cousin's post from their night on the town — not going to show up first because they're your cousin. The kale smoothie recipe video is going to show up because that's what you've demonstrated you're into.\n\nThe system prioritizes your: Likes, Comments, Shares, Clicks, Lingering.\n\nSo what does this mean for your socials? It doesn't matter how many followers you have. It doesn't matter how frequently you post. It only matters that you post stuff that other people find interesting. Stuff that actually makes people want to stop scrolling for 4 seconds.\n\nStart posting interesting stuff.",
+    engagement: "High engagement",
+    date: "2026-03-25",
+    url: "https://www.linkedin.com/in/rdvcpa/recent-activity/all/"
+  },
+  {
+    id: 102,
+    profileId: 13,
+    profile: "Roman Villard",
+    tag: "cpa",
+    hook: "Personal Story",
+    text: "I've had a lot of wild things happen in my career. A few of them:\n\nClosed a deal with someone I met from a Craigslist deal\n\nStarted my career at an accounting firm on an all-inclusive ski trip\n\nWon 'free' products from a client by beating their \"best in office\" in a table tennis match\n\nWorked with several sports franchise owners in their penthouse offices\n\nLost two jobs in one day — offer revoked from one and quit the other\n\nStarted a company as my first kid turned 1\n\nWas told I won the deal because I look like Justin Timberlake\n\nJust about every wild, weird, or unexpected turn has been because I took a perceived 'risk' or stepped outside of my comfort zone. You'll never know if you can't put yourself out there.\n\nHappy Friday.",
+    engagement: "49 reactions · 16 comments",
+    date: "2026-03-28",
+    url: "https://www.linkedin.com/in/rdvcpa/recent-activity/all/"
+  },
+  {
+    id: 103,
+    profileId: 13,
+    profile: "Roman Villard",
+    tag: "cpa",
+    hook: "Personal Story",
+    text: "somebody on my team just told me \"thanks for all of your hard work.\"\n\nkind of funny reflecting on that comment because as a leader of people the last number of years, it's pretty rare to get that kind of unsolicited feedback on my job performance. I mean I guess it happens sometimes on specific situations, but I brush it off because it's just my job.\n\nit kind of made me feel a little sentimental to hear that appreciation though. it's nice to be nice, ya know, and sometimes just say the nice things that pop into your brain.",
+    engagement: "26 reactions · 8 comments",
+    date: "2026-03-27",
+    url: "https://www.linkedin.com/in/rdvcpa/recent-activity/all/"
+  },
+  // ── Codie Sanchez ──
+  {
+    id: 104,
+    profileId: 1,
+    profile: "Codie Sanchez",
+    tag: "broad",
+    hook: "Bold Statement",
+    text: "Underrated business model:\n\nTurning a service into a product.\n\nMost service businesses sell time. You trade hours for dollars, cap your income, and burn out trying to scale.\n\nBut the best operators figure out how to productize their service — turn what they do into something repeatable, sellable, and scalable without them.",
+    engagement: "462 reactions · 215 comments · 6 reposts",
+    date: "2026-03-27",
+    url: "https://www.linkedin.com/in/codiesanchez/recent-activity/all/"
+  },
+  {
+    id: 105,
+    profileId: 1,
+    profile: "Codie Sanchez",
+    tag: "broad",
+    hook: "Personal Story",
+    text: "The story behind this couple's $1M+ business acquisition:\n\nThey bought a med spa. No industry experience. Used seller financing. And 3x'd the revenue in under 2 years.\n\nHere's exactly how they did it — and what most people miss when buying a business like this.",
+    engagement: "290 reactions · 123 comments · 7 reposts",
+    date: "2026-03-26",
+    url: "https://www.linkedin.com/in/codiesanchez/recent-activity/all/"
+  },
+  {
+    id: 106,
+    profileId: 1,
+    profile: "Codie Sanchez",
+    tag: "broad",
+    hook: "Educational",
+    text: "Here's how I manage my personal finances (The Personal P&L):\n\nMost people track their spending. Almost nobody tracks their earning potential.\n\nI run a Personal P&L just like I run a business. Revenue in, costs out, margin tracked. The goal isn't to spend less — it's to earn more and allocate better.",
+    engagement: "High engagement",
+    date: "2026-03-25",
+    url: "https://www.linkedin.com/in/codiesanchez/recent-activity/all/"
+  },
+  // ── Alex Hormozi ──
+  {
+    id: 107,
+    profileId: 2,
+    profile: "Alex Hormozi",
+    tag: "broad",
+    hook: "Bold Statement",
+    text: "The bigger the monster, the more epic the story.\n\nStop running from hard things. The harder the obstacle, the better the story you'll get to tell when you make it through.",
+    engagement: "1,421 reactions · 187 comments · 62 reposts",
+    date: "2026-03-27",
+    url: "https://www.linkedin.com/in/alexhormozi/recent-activity/all/"
+  },
+  {
+    id: 108,
+    profileId: 2,
+    profile: "Alex Hormozi",
+    tag: "broad",
+    hook: "Contrarian",
+    text: "Never let unaccomplished people judge your accomplishments.\n\nThe people who criticize your wins are usually the ones who haven't started yet. Don't let their fear become your ceiling.",
+    engagement: "High engagement",
+    date: "2026-03-26",
+    url: "https://www.linkedin.com/in/alexhormozi/recent-activity/all/"
+  },
+  {
+    id: 109,
+    profileId: 2,
+    profile: "Alex Hormozi",
+    tag: "broad",
+    hook: "Announcement",
+    text: "I'm hiring a bunch of remote and on-site sales roles.\n\nIf you are looking for the following... apply asap.\n\nWe're building something real and need people who want to be part of it from the ground up.",
+    engagement: "567 reactions · 106 comments · 5 reposts",
+    date: "2026-03-28",
+    url: "https://www.linkedin.com/in/alexhormozi/recent-activity/all/"
+  }
+];
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let profiles = [];
+let posts    = [];
+let nextId   = 200;
+let activeFilter = "all";
+let activePostsProfile = "all";
+let activeHookFilter = "all";
+
+// ════════════════════════════════════════
+//  PERSISTENCE
+// ════════════════════════════════════════
+function load() {
+  try {
+    const saved = localStorage.getItem("flg_swipe_v2");
+    if (saved) {
+      const d = JSON.parse(saved);
+      profiles = d.profiles || DEFAULT_PROFILES;
+      posts    = d.posts    || DEFAULT_POSTS;
+      nextId   = d.nextId   || 200;
+    } else {
+      profiles = DEFAULT_PROFILES;
+      posts    = DEFAULT_POSTS;
+    }
+  } catch(e) {
+    profiles = DEFAULT_PROFILES;
+    posts    = DEFAULT_POSTS;
+  }
+}
+
+function save() {
+  localStorage.setItem("flg_swipe_v2", JSON.stringify({ profiles, posts, nextId }));
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+// ════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════
+function switchTab(tab, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("panel-" + tab).classList.add("active");
+  const addBtn = document.getElementById("add-btn-header");
+  addBtn.style.display = tab === "profiles" ? "flex" : "none";
+  if (tab === "posts") renderSidebar();
+}
+
+// ════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════
+function initials(name) {
+  return (name||"?").trim().split(/\s+/).map(w=>w[0]).join("").substring(0,2).toUpperCase();
+}
+function escHtml(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function updateStats() {
+  document.getElementById("stat-total").textContent = profiles.length;
+  document.getElementById("stat-cpa").textContent   = profiles.filter(p=>p.tag==="cpa").length;
+  document.getElementById("stat-broad").textContent = profiles.filter(p=>p.tag==="broad").length;
+  document.getElementById("stat-both").textContent  = profiles.filter(p=>p.tag==="both").length;
+  document.getElementById("stat-posts").textContent = posts.length;
+  document.getElementById("tc-profiles").textContent = profiles.length;
+  document.getElementById("tc-posts").textContent    = posts.length;
+}
+
+// ════════════════════════════════════════
+//  PROFILES TAB
+// ════════════════════════════════════════
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderProfiles();
+}
+
+function renderProfiles() {
+  const grid  = document.getElementById("grid");
+  const query = (document.getElementById("search-input").value||"").toLowerCase();
+  updateStats();
+
+  const filtered = profiles.filter(p => {
+    const mf = activeFilter === "all" || p.tag === activeFilter;
+    const ms = !query || p.name.toLowerCase().includes(query) || (p.notes||"").toLowerCase().includes(query);
+    return mf && ms;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--muted);font-size:14px;">No profiles found.</div>`;
+    return;
+  }
+
+  const postCountByProfile = {};
+  posts.forEach(p => { postCountByProfile[p.profileId] = (postCountByProfile[p.profileId]||0)+1; });
+
+  grid.innerHTML = filtered.map(p => {
+    const pc = postCountByProfile[p.id] || 0;
+    return `
+    <div class="card" id="card-${p.id}">
+      <div class="card-header">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <div class="card-avatar">${initials(p.name)}</div>
+          <div class="card-info">
+            <input class="name-input" value="${escHtml(p.name)}" placeholder="Name"
+              onchange="updateField(${p.id},'name',this.value)"
+              oninput="updateAvatar(${p.id},this.value)"/>
+          </div>
+        </div>
+        <div class="card-actions">
+          ${pc > 0 ? `<button class="icon-btn posts-btn" title="View ${pc} saved posts" onclick="goToPosts(${p.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </button>` : ''}
+          <button class="icon-btn delete" title="Remove" onclick="deleteProfile(${p.id})">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="tag-row">
+        <select class="tag-select ${p.tag}" onchange="updateField(${p.id},'tag',this.value);this.className='tag-select '+this.value">
+          <option value="broad" ${p.tag==='broad'?'selected':''}>Broad Business</option>
+          <option value="cpa"   ${p.tag==='cpa'  ?'selected':''}>CPA Niche</option>
+          <option value="both"  ${p.tag==='both' ?'selected':''}>Both</option>
+        </select>
+        ${pc > 0 ? `<span onclick="goToPosts(${p.id})" class="view-posts-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          ${pc} saved post${pc>1?'s':''}
+        </span>` : ''}
+      </div>
+
+      <div class="url-row">
+        <input class="url-input" type="text" value="${escHtml(p.url||'')}" placeholder="https://linkedin.com/in/..."
+          onchange="updateField(${p.id},'url',this.value);updateLink(${p.id},this.value)"
+          id="url-${p.id}"/>
+        <a class="li-link" href="${escHtml(p.url||'#')}" target="_blank" id="link-${p.id}" title="Open LinkedIn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+        </a>
+      </div>
+
+      <div>
+        <div class="notes-label">Notes</div>
+        <textarea class="notes-textarea" placeholder="Hook styles, formats, what makes their content work..."
+          onchange="updateField(${p.id},'notes',this.value)">${escHtml(p.notes||'')}</textarea>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function goToPosts(profileId) {
+  const postBtn = document.querySelectorAll(".tab-btn")[1];
+  switchTab("posts", postBtn);
+  setPostsProfileFilter(profileId, null);
+  renderSidebar();
+  renderPosts();
+}
+
+function updateField(id, field, value) {
+  const p = profiles.find(p=>p.id===id);
+  if (p) { p[field]=value; save(); updateStats(); }
+}
+function updateAvatar(id, name) {
+  const el = document.querySelector(`#card-${id} .card-avatar`);
+  if (el) el.textContent = initials(name||"?");
+}
+function updateLink(id, url) {
+  const link = document.getElementById(`link-${id}`);
+  if (link) link.href = url||"#";
+}
+function deleteProfile(id) {
+  if (!confirm("Remove this profile?")) return;
+  profiles = profiles.filter(p=>p.id!==id);
+  save(); renderProfiles();
+}
+
+// ════════════════════════════════════════
+//  POSTS TAB
+// ════════════════════════════════════════
+function renderSidebar() {
+  const container = document.getElementById("sidebar-profiles");
+  const postCountByProfile = {};
+  posts.forEach(p => { postCountByProfile[p.profileId]=(postCountByProfile[p.profileId]||0)+1; });
+
+  // Only show profiles that have posts
+  const profilesWithPosts = profiles.filter(p => postCountByProfile[p.id]);
+
+  document.getElementById("sc-all").textContent = posts.length;
+
+  container.innerHTML = profilesWithPosts.map(p => {
+    const cnt = postCountByProfile[p.id] || 0;
+    const isActive = activePostsProfile == p.id;
+    return `
+    <div class="sidebar-profile ${isActive?'active':''}" data-profile-filter="${p.id}" onclick="setPostsProfileFilter(${p.id}, this)">
+      <div class="sp-avatar">${initials(p.name)}</div>
+      <div class="sp-name">${escHtml(p.name.split(' ')[0])}</div>
+      <span class="sp-count">${cnt}</span>
+    </div>`;
+  }).join("");
+}
+
+function setPostsProfileFilter(profileId, btn) {
+  activePostsProfile = profileId;
+  document.querySelectorAll(".sidebar-profile").forEach(el => {
+    el.classList.toggle("active", el.dataset.profileFilter == String(profileId));
+  });
+  renderPosts();
+}
+
+function setHookFilter(hook, btn) {
+  activeHookFilter = hook;
+  document.querySelectorAll(".hook-filter").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderPosts();
+}
+
+function buildHookFilters() {
+  const hooks = [...new Set(posts.map(p=>p.hook).filter(Boolean))].sort();
+  const container = document.getElementById("hook-filters");
+  container.innerHTML = `<button class="hook-filter ${activeHookFilter==='all'?'active':''}" data-hook="all" onclick="setHookFilter('all',this)">All Hooks</button>` +
+    hooks.map(h => `<button class="hook-filter ${activeHookFilter===h?'active':''}" data-hook="${escHtml(h)}" onclick="setHookFilter('${escHtml(h)}',this)">${escHtml(h)}</button>`).join("");
+}
+
+function renderPosts() {
+  buildHookFilters();
+  const list  = document.getElementById("posts-feed-list");
+  const query = (document.getElementById("posts-search").value||"").toLowerCase();
+
+  let filtered = posts.filter(p => {
+    const mProfile = activePostsProfile === "all" || p.profileId == activePostsProfile;
+    const mHook    = activeHookFilter   === "all" || p.hook === activeHookFilter;
+    const mSearch  = !query || p.text.toLowerCase().includes(query) || p.profile.toLowerCase().includes(query) || (p.hook||"").toLowerCase().includes(query);
+    return mProfile && mHook && mSearch;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="posts-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>No posts found.</p>
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(post => {
+    const lines = post.text.split('\n').filter(l=>l.trim());
+    const preview = lines.slice(0,3).join('\n');
+    const isTruncatable = post.text.length > 280 || lines.length > 4;
+    return `
+    <div class="post-card" id="post-${post.id}">
+      <div class="post-card-header">
+        <div class="post-profile-avatar">${initials(post.profile)}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="post-profile-name">${escHtml(post.profile)}</div>
+          <div class="post-meta">
+            <span class="post-tag ${post.tag}">${post.tag==='cpa'?'CPA Niche':post.tag==='broad'?'Broad Business':'Both'}</span>
+            ${post.hook?`<span class="hook-badge">${escHtml(post.hook)}</span>`:''}
+          </div>
+        </div>
+        <div class="post-date">${post.date||''}</div>
+      </div>
+
+      <div class="post-text ${isTruncatable?'collapsed':''}" id="pt-${post.id}">${escHtml(post.text)}</div>
+      ${isTruncatable?`<button class="expand-btn" id="eb-${post.id}" onclick="toggleExpand(${post.id})">Show more</button>`:''}
+
+      <div class="post-footer">
+        <span class="engagement-text">${escHtml(post.engagement||'')}</span>
+        <a class="li-open-btn" href="${escHtml(post.url||'#')}" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-4 0v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          View on LinkedIn
+        </a>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleExpand(id) {
+  const el = document.getElementById("pt-" + id);
+  const btn = document.getElementById("eb-" + id);
+  if (!el || !btn) return;
+  const collapsed = el.classList.contains("collapsed");
+  el.classList.toggle("collapsed", !collapsed);
+  btn.textContent = collapsed ? "Show less" : "Show more";
+}
+
+// ════════════════════════════════════════
+//  MODAL
+// ════════════════════════════════════════
+function openModal() {
+  ["m-name","m-url","m-notes"].forEach(id => document.getElementById(id).value="");
+  document.getElementById("m-tag").value = "broad";
+  document.getElementById("modal").classList.add("open");
+  setTimeout(() => document.getElementById("m-name").focus(), 100);
+}
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+}
+function addProfile() {
+  const name = document.getElementById("m-name").value.trim();
+  if (!name) { document.getElementById("m-name").focus(); return; }
+  profiles.push({ id: nextId++, name, url: document.getElementById("m-url").value.trim(), tag: document.getElementById("m-tag").value, notes: document.getElementById("m-notes").value.trim() });
+  save(); renderProfiles(); closeModal();
+}
+document.getElementById("modal").addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+document.getElementById("modal").addEventListener("keydown", e => { if(e.key==="Enter") addProfile(); if(e.key==="Escape") closeModal(); });
+
+// ════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════
+load();
+renderProfiles();
+renderSidebar();
+renderPosts();
+</script>
+</body>
+</html>
